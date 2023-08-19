@@ -1,4 +1,4 @@
-package reply
+package protocol
 
 import (
 	"strconv"
@@ -85,4 +85,23 @@ func MakeStatusReply(status string) *StatusReply {
 	return &StatusReply{
 		Status: status,
 	}
+}
+
+// error Reply
+type StandardErrorReply struct {
+	Status string
+}
+
+func MakeErrReply(status string) *StandardErrorReply {
+	return &StandardErrorReply{
+		Status: status,
+	}
+}
+
+func (s *StandardErrorReply) ToBytes() []byte {
+	return []byte("-" + s.Status + CRLF)
+}
+
+func (s *StandardErrorReply) Error() string {
+	return s.Status
 }

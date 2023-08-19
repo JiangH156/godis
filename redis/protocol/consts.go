@@ -1,4 +1,4 @@
-package reply
+package protocol
 
 // PING
 type PingReply struct {
