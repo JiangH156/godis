@@ -1,4 +1,5 @@
-1. **git规范**
+# Godis-基于golang实现的redis
+**git规范**
 
 > 表示代码提交的类型，可以是以下之一
 > 示例： fix: update the bug

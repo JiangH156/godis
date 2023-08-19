@@ -4,40 +4,40 @@ package reply
 type PingReply struct {
 }
 
-var PingBytes = []byte("+PONG\r\n")
+var pingBytes = []byte("+PONG\r\n")
 
 func (p *PingReply) ToBytes() []byte {
-	return PingBytes
+	return pingBytes
 }
 
 // OK
 type OkReply struct {
 }
 
-var OKBytes = []byte("+OK\r\n")
+var okBytes = []byte("+OK\r\n")
 
 func (o *OkReply) ToBytes() []byte {
-	return OKBytes
+	return okBytes
 }
 
 // NullBulk
 type NullBulkReply struct {
 }
 
-var NullBulkBytes = []byte("$1\r\n")
+var nullBulkBytes = []byte("$-1\r\n")
 
 func (n *NullBulkReply) ToBytes() []byte {
-	return NullBulkBytes
+	return nullBulkBytes
 }
 
 // EmptyMultiBulk
 type EmptyMultiBulkReply struct {
 }
 
-var EmptyMultiBulkBytes = []byte("*0\r\n")
+var emptyMultiBulkBytes = []byte("*0\r\n")
 
 func (e *EmptyMultiBulkReply) ToBytes() []byte {
-	return EmptyMultiBulkBytes
+	return emptyMultiBulkBytes
 }
 
 //	NoReply
@@ -46,8 +46,8 @@ func (e *EmptyMultiBulkReply) ToBytes() []byte {
 type NoReply struct {
 }
 
-var NoBytes = []byte("")
+var noBytes = []byte("")
 
 func (n *NoReply) ToBytes() []byte {
-	return NoBytes
+	return noBytes
 }
