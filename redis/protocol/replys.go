@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"github.com/jiangh156/godis/interface/redis"
 	"strconv"
 )
 
@@ -38,23 +39,23 @@ type MultiBulkReply struct {
 	Args [][]byte
 }
 
+func MakeMultiBulkReply(args [][]byte) *MultiBulkReply {
+	return &MultiBulkReply{
+		Args: args,
+	}
+}
+
 func (m *MultiBulkReply) ToBytes() []byte {
 	res := "*" + strconv.Itoa(len(m.Args)) + CRLF
 	for _, arg := range m.Args {
 		// arg为空
-		if len(arg) == 0 {
+		if arg == nil {
 			res += "$-1" + CRLF
 		} else {
 			res += "$" + strconv.Itoa(len(arg)) + CRLF + string(arg) + CRLF
 		}
 	}
 	return []byte(res)
-}
-
-func MakeMultiBulkReply(args [][]byte) *MultiBulkReply {
-	return &MultiBulkReply{
-		Args: args,
-	}
 }
 
 // int Reply
@@ -77,14 +78,17 @@ type StatusReply struct {
 	Status string
 }
 
-func (s *StatusReply) ToBytes() []byte {
-	return []byte("$" + s.Status + CRLF)
-}
-
 func MakeStatusReply(status string) *StatusReply {
 	return &StatusReply{
 		Status: status,
 	}
+}
+
+func (s *StatusReply) ToBytes() []byte {
+	return []byte("+" + s.Status + CRLF)
+}
+func IsOKReply(reply redis.Reply) bool {
+	return string(reply.ToBytes()) == "+OK\r\n"
 }
 
 // error Reply
@@ -104,4 +108,8 @@ func (s *StandardErrorReply) ToBytes() []byte {
 
 func (s *StandardErrorReply) Error() string {
 	return s.Status
+}
+
+func IsErrorReply(reply redis.Reply) bool {
+	return reply.ToBytes()[0] == '-'
 }

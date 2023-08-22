@@ -6,6 +6,10 @@ type UnknownErrReply struct {
 
 var UnknownErrBytes = []byte("-ERR unknown\r\n")
 
+func MakeUnknownErrReply() *UnknownErrReply {
+	return &UnknownErrReply{}
+}
+
 func (u *UnknownErrReply) ToBytes() []byte {
 	return UnknownErrBytes
 }
@@ -19,6 +23,10 @@ type ArgNumErrReply struct {
 	Cmd string
 }
 
+func MakeArgNumErrReply() *ArgNumErrReply {
+	return &ArgNumErrReply{}
+}
+
 func (a *ArgNumErrReply) ToBytes() []byte {
 	return []byte("-ERR wrong number of argument for " + a.Cmd + " command\r\n")
 }
@@ -29,6 +37,10 @@ func (a *ArgNumErrReply) Error() string {
 
 // SyntaxErr
 type SyntaxErrReply struct {
+}
+
+func MakeSyntaxErrReply() *SyntaxErrReply {
+	return &SyntaxErrReply{}
 }
 
 var SyntaxErrBytes = []byte("-ERR syntax error\r\n")
@@ -47,6 +59,9 @@ type WrongTypeErrReply struct {
 
 var WrongTypeErrBytes = []byte("-WRONGTYPE Operation against a key holding the wrong king of value\r\n")
 
+func MakeWrongTypeErrReply() *WrongTypeErrReply {
+	return &WrongTypeErrReply{}
+}
 func (w *WrongTypeErrReply) ToBytes() []byte {
 	return WrongTypeErrBytes
 }
@@ -58,6 +73,10 @@ func (w *WrongTypeErrReply) Error() string {
 // ProtocolErr
 type ProtocolErrReply struct {
 	Msg string
+}
+
+func MakeProtocolErrReply() *ProtocolErrReply {
+	return &ProtocolErrReply{}
 }
 
 func (p *ProtocolErrReply) ToBytes() []byte {

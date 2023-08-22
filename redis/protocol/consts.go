@@ -6,6 +6,10 @@ type PingReply struct {
 
 var pingBytes = []byte("+PONG\r\n")
 
+func MakePingReply() *PingReply {
+	return &PingReply{}
+}
+
 func (p *PingReply) ToBytes() []byte {
 	return pingBytes
 }
@@ -15,6 +19,10 @@ type OkReply struct {
 }
 
 var okBytes = []byte("+OK\r\n")
+
+func MakeOkReply() *OkReply {
+	return &OkReply{}
+}
 
 func (o *OkReply) ToBytes() []byte {
 	return okBytes
@@ -26,6 +34,10 @@ type NullBulkReply struct {
 
 var nullBulkBytes = []byte("$-1\r\n")
 
+func MakeNullBulkReply() *NullBulkReply {
+	return &NullBulkReply{}
+}
+
 func (n *NullBulkReply) ToBytes() []byte {
 	return nullBulkBytes
 }
@@ -35,6 +47,10 @@ type EmptyMultiBulkReply struct {
 }
 
 var emptyMultiBulkBytes = []byte("*0\r\n")
+
+func MakeEmptyMultiBulkReply() *EmptyMultiBulkReply {
+	return &EmptyMultiBulkReply{}
+}
 
 func (e *EmptyMultiBulkReply) ToBytes() []byte {
 	return emptyMultiBulkBytes
@@ -47,6 +63,10 @@ type NoReply struct {
 }
 
 var noBytes = []byte("")
+
+func MakeNoReply() *NoReply {
+	return &NoReply{}
+}
 
 func (n *NoReply) ToBytes() []byte {
 	return noBytes
