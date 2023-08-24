@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"github.com/jiangh156/godis/datastruct/dict"
@@ -57,15 +57,15 @@ func (db *DB) Get(key string) (entity *DataEntity, exists bool) {
 	entity, _ = raw.(*DataEntity)
 	return entity, true
 }
-func (db *DB) Put(key string, val any) (result int) {
+func (db *DB) Put(key string, val *DataEntity) (result int) {
 	result = db.Data.Put(key, val)
 	return result
 }
-func (db *DB) PutIfExists(key string, val any) (result int) {
+func (db *DB) PutIfExists(key string, val *DataEntity) (result int) {
 	result = db.Data.PutIfExists(key, val)
 	return result
 }
-func (db *DB) PutIfAbsent(key string, val any) (result int) {
+func (db *DB) PutIfAbsent(key string, val *DataEntity) (result int) {
 	result = db.Data.PutIfAbsent(key, val)
 	return result
 }
