@@ -108,4 +108,5 @@ func init() {
 	RegisterCommand("FlushDB", execFlushDB, 1)
 	RegisterCommand("Type", execType, 2)
 	RegisterCommand("Rename", execRename, 3)
+	RegisterCommand("RenameNX", execRenameNX, 3)
 }
