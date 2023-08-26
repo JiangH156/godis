@@ -10,13 +10,16 @@ import (
 )
 
 type PropertyHolder struct {
-	Bind           string   `cfg:"bind"`           //绑定地址
-	Port           int      `cfg:"port"`           //监听端口
-	AppendOnly     bool     `cfg:"appendOnly"`     //是否启用AOF（Append-Only File）持久化
-	AppendFilename string   `cfg:"appendFilename"` //AOF文件的文件名
-	MaxClients     int      `cfg:"maxClients"`     //最大客户端数量
-	Peers          []string `cfg:"peers"`          //其他节点的地址列表
-	Self           string   `cfg:"self"`           //本身的地址
+	Bind           string `cfg:"bind"`           //绑定地址
+	Port           int    `cfg:"port"`           //监听端口
+	AppendOnly     bool   `cfg:"appendOnly"`     //是否启用AOF（Append-Only File）持久化
+	AppendFilename string `cfg:"appendFilename"` //AOF文件的文件名
+	MaxClients     int    `cfg:"maxClients"`     //最大客户端数量
+	Requirepass    string `cfg:"requirepass"`    //密码
+	Databases      int    `cfg:"databases`       //数据库数量
+
+	Peers []string `cfg:"peers"` //其他节点的地址列表
+	Self  string   `cfg:"self"`  //本身的地址
 }
 
 var Properties *PropertyHolder

@@ -1,7 +1,8 @@
-bind: "127.0.0.1"
+bind: 127.0.0.1
 port: 6279
 appendOnly: false
 appendFilename:
 maxClients:
+databases: 16
 peers:
 self:
