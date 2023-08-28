@@ -1,5 +1,5 @@
 bind: 127.0.0.1
-port: 6279
+port: 8000
 appendOnly: false
 appendFilename:
 maxClients:

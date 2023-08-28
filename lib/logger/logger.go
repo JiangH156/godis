@@ -14,7 +14,7 @@ type LogCfg struct {
 	Path       string `yaml:"path"`
 	Name       string `yaml:"name"`
 	Ext        string `yaml:"ext"`
-	timeFormat string `yaml:"time-format"`
+	TimeFormat string `yaml:"time-format"`
 }
 type logLevel int
 
@@ -38,7 +38,7 @@ var (
 func Setup(cfg *LogCfg) {
 	var err error
 	dir := cfg.Path
-	filename := fmt.Sprintf("%s-%s.%s", cfg.Name, time.Now().Format(cfg.timeFormat), cfg.Ext)
+	filename := fmt.Sprintf("%s-%s.%s", cfg.Name, time.Now().Format(cfg.TimeFormat), cfg.Ext)
 	logFile, err := mustOpen(filename, dir)
 	if err != nil {
 		fmt.Errorf("logging.Setup err: %s", err)

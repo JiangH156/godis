@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/jiangh156/godis/config"
+	"github.com/jiangh156/godis/lib/logger"
+	"github.com/jiangh156/godis/redis/server"
 	"github.com/jiangh156/godis/tcp"
 )
 
@@ -17,8 +18,15 @@ var banner = `
 
 func main() {
 	print(banner)
-	config.SetupConfig("redis.yml")
-	handler := &tcp.EchoHandler{}
+	logger.Setup(&logger.LogCfg{
+		Path:       "logs",
+		Name:       "godis",
+		Ext:        ".log",
+		TimeFormat: "2006-01-01",
+	})
+	config.SetupConfig("cmd/redis.yml")
+	//handler := server.MakeRedisHandler()
+	handler := server.MakeRedisHandler()
 	err := tcp.ListenAndServeWithSignal(&tcp.Config{
 		Address: config.Properties.Bind,
 		Port:    config.Properties.Port,

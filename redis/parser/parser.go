@@ -24,7 +24,7 @@ func ParseStream(reader io.Reader) <-chan *PayLoad {
 	return ch
 }
 func parse0(rawReader io.Reader, ch chan<- *PayLoad) {
-	go func() {
+	defer func() {
 		if err := recover(); err != nil {
 			logger.Error(err, string(debug.Stack()))
 		}
@@ -83,7 +83,6 @@ func parse0(rawReader io.Reader, ch chan<- *PayLoad) {
 			}
 		}
 	}
-
 }
 
 // 读取BulkString
