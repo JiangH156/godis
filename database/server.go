@@ -34,8 +34,9 @@ func (s *Server) Exec(conn redis.Connection, args [][]byte) redis.Reply {
 }
 
 func (s *Server) Close() {
-	//TODO implement me
-	panic("implement me")
+	for _, db := range s.DBSet {
+		db.Close()
+	}
 }
 
 func (s *Server) AfterClientClose(conn redis.Connection) {

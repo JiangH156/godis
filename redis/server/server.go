@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/jiangh156/godis/database"
 	"github.com/jiangh156/godis/interface/db"
 	"github.com/jiangh156/godis/lib/logger"
@@ -40,9 +39,8 @@ func (handler *RedisHandler) Handle(ctx context.Context, conn net.Conn) {
 	client := connection.NewConn(conn)
 	handler.ActiveConn.Store(client, struct{}{})
 	ch := parser.ParseStream(conn)
+label:
 	for payload := range ch {
-		//TODO
-		fmt.Printf("%v", payload)
 		if payload.Err != nil {
 			// conn close
 			if payload.Err == io.EOF || errors.Is(payload.Err, io.ErrUnexpectedEOF) ||
@@ -72,14 +70,14 @@ func (handler *RedisHandler) Handle(ctx context.Context, conn net.Conn) {
 				status := payload.Data.(*protocol.StatusReply).Status
 				if strings.ToUpper(status) != "PING" {
 					logger.Info("statusReply must is 'PING'")
-					continue
+					continue label
 				}
 				args[0] = []byte(status)
 			case *protocol.MultiBulkReply:
 				args = payload.Data.(*protocol.MultiBulkReply).Args
 			default:
 				logger.Info("require Bulk or multiBulk")
-				continue
+				continue label
 			}
 			result := handler.DB.Exec(client, args)
 			if result != nil {

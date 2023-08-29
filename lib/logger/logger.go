@@ -43,14 +43,14 @@ func Setup(cfg *LogCfg) {
 	if err != nil {
 		fmt.Errorf("logging.Setup err: %s", err)
 	}
-	mw := io.MultiWriter(os.Stdout, logFile)
+	mw := io.MultiWriter(logFile)
 	logger = log.New(mw, DefaultPrefix, log.LstdFlags)
 }
 
 func setPrefix(level logLevel) {
 	_, file, line, ok := runtime.Caller(DefaultCallerDepth)
 	if ok {
-		logPrefix = fmt.Sprintf("[%s][%s:%s]", levelFlags[level], filepath.Base(file), line)
+		logPrefix = fmt.Sprintf("[%s][%s:%d]", levelFlags[level], filepath.Base(file), line)
 	} else {
 		logPrefix = fmt.Sprintf("[%s]", levelFlags[level])
 	}
