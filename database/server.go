@@ -2,9 +2,9 @@ package database
 
 import (
 	"github.com/jiangh156/godis/config"
-	"github.com/jiangh156/godis/datastruct/dict"
 	"github.com/jiangh156/godis/interface/redis"
 	"github.com/jiangh156/godis/redis/protocol"
+	"strings"
 )
 
 type Server struct {
@@ -18,19 +18,21 @@ func NewSingleServer() *Server {
 	}
 	server := &Server{DBSet: make([]*DB, 16)}
 	for i := range server.DBSet {
-		db := &DB{
-			index: i,
-			Data:  dict.NewSyncDict(),
-		}
+		db := MakeDB()
+		db.index = i
 		server.DBSet[i] = db
 	}
 	return server
 }
 
 func (s *Server) Exec(conn redis.Connection, args [][]byte) redis.Reply {
-	return protocol.MakeMultiBulkReply(args)
-	//TODO implement me
-	panic("implement me")
+	// 处理select命令
+	cmdName := args[0]
+	if strings.ToLower(string(cmdName)) == "ping" {
+		return protocol.MakePingReply()
+	}
+	index := conn.GetDBIndex()
+	return s.DBSet[index].Exec(conn, args)
 }
 
 func (s *Server) Close() {
@@ -41,5 +43,4 @@ func (s *Server) Close() {
 
 func (s *Server) AfterClientClose(conn redis.Connection) {
 	//TODO implement me
-	panic("implement me")
 }

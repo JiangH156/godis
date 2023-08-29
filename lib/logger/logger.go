@@ -43,7 +43,7 @@ func Setup(cfg *LogCfg) {
 	if err != nil {
 		fmt.Errorf("logging.Setup err: %s", err)
 	}
-	mw := io.MultiWriter(logFile)
+	mw := io.MultiWriter(os.Stdout, logFile)
 	logger = log.New(mw, DefaultPrefix, log.LstdFlags)
 }
 

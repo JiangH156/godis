@@ -18,7 +18,7 @@ type DB struct {
 }
 
 func (db *DB) Close() {
-	//TODO aof处理
+	db.Data.Clear()
 }
 
 func (db *DB) AfterClientClose(c redis.Connection) {

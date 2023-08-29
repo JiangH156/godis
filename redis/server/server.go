@@ -34,7 +34,7 @@ func (handler *RedisHandler) Handle(ctx context.Context, conn net.Conn) {
 		return
 	}
 	defer func() {
-		_ = handler.Close()
+		_ = conn.Close()
 	}()
 	client := connection.NewConn(conn)
 	handler.ActiveConn.Store(client, struct{}{})
@@ -45,7 +45,7 @@ label:
 			// conn close
 			if payload.Err == io.EOF || errors.Is(payload.Err, io.ErrUnexpectedEOF) ||
 				strings.Contains(payload.Err.Error(), "use of closed network connection") {
-				handler.Close()
+				handler.closeClient(client)
 				logger.Info("connection closed: " + client.RemoteAddr())
 				return
 			}
@@ -53,7 +53,7 @@ label:
 			// write back errMsg
 			_, err := client.Write(errReply.ToBytes())
 			if err != nil {
-				handler.Close()
+				handler.closeClient(client)
 				logger.Error("connection closed: ", err.Error())
 				return
 			}
@@ -90,6 +90,12 @@ label:
 
 }
 
+func (handler *RedisHandler) closeClient(client *connection.Connection) {
+	_ = client.Close()
+	handler.DB.AfterClientClose(client)
+	handler.ActiveConn.Delete(client)
+}
+
 func (handler *RedisHandler) Close() error {
 	logger.Info("Handler shutting down...")
 	if !handler.closing.Get() {
@@ -100,8 +106,7 @@ func (handler *RedisHandler) Close() error {
 			handler.waitingClients.Add(1)
 			defer handler.waitingClients.Done()
 			client := key.(*connection.Connection)
-			client.Close() // 这里会阻塞
-			handler.ActiveConn.Delete(key)
+			handler.closeClient(client) //这一步最多阻塞5秒
 		}()
 		return true
 	})
