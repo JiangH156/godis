@@ -34,10 +34,13 @@ func MakeDB() *DB {
 
 func (db *DB) Exec(conn redis.Connection, cmdLine CmdLine) redis.Reply {
 	cmdName := string(cmdLine[0])
-	cmd := cmdTable[cmdName]
-	ok := validateCommand(cmd, cmdLine)
+	cmd, ok := cmdTable[cmdName]
 	if !ok {
-		return protocol.MakeArgNumErrReply()
+		return protocol.MakeWrongTypeErrReply()
+	}
+	ok = validateCommand(cmd, cmdLine)
+	if !ok {
+		return protocol.MakeArgNumErrReply(cmdName)
 	}
 	return cmd.exector(db, cmdLine[1:])
 }
@@ -81,6 +84,7 @@ func (db *DB) Removes(keys ...string) (result int) {
 	for _, key := range keys {
 		_, exists := db.Data.Get(key)
 		if exists {
+			db.Data.Remove(key)
 			result++
 		}
 	}

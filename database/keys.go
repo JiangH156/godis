@@ -19,7 +19,7 @@ func execDel(db *DB, args [][]byte) redis.Reply {
 	return protocol.MakeIntReply(int64(result))
 }
 
-// EXIST k1 k2 k3
+// EXISTS k1 k2 k3
 func execExists(db *DB, args [][]byte) redis.Reply {
 	if len(args) < 1 {
 		return protocol.MakeErrReply("ERR wrong number of arguments for 'exists' command")
@@ -81,6 +81,7 @@ func execRename(db *DB, args [][]byte) redis.Reply {
 	if !exists {
 		return protocol.MakeErrReply("ERR no such key")
 	}
+	db.Remove(oldKye)
 	db.Put(newKey, entity)
 	return protocol.MakeStatusReply("OK")
 }
@@ -109,4 +110,6 @@ func init() {
 	RegisterCommand("Type", execType, 2)
 	RegisterCommand("Rename", execRename, 3)
 	RegisterCommand("RenameNX", execRenameNX, 3)
+
+	RegisterSingleCommand("FLUSHDB")
 }

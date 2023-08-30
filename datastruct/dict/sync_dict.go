@@ -103,7 +103,7 @@ func (dict *SyncDict) RandomDistinctKeys(limit int) []string {
 }
 
 func (dict *SyncDict) Clear() {
-	dict = &SyncDict{}
+	*dict = SyncDict{}
 }
 
 func MakeSyncDict() *SyncDict {

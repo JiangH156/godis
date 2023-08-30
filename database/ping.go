@@ -11,4 +11,6 @@ func execPing(db *DB, args [][]byte) redis.Reply {
 
 func init() {
 	RegisterCommand("PING", execPing, 1)
+
+	RegisterSingleCommand("PING")
 }

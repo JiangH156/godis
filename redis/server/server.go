@@ -68,11 +68,11 @@ label:
 			switch payload.Data.(type) {
 			case *protocol.StatusReply: // PING
 				status := payload.Data.(*protocol.StatusReply).Status
-				if strings.ToUpper(status) != "PING" {
-					logger.Info("statusReply must is 'PING'")
+				if !database.SingleCommandExist(status) {
+					logger.Info("invalid command: ", status)
 					continue label
 				}
-				args[0] = []byte(status)
+				args = append(args, []byte(status))
 			case *protocol.MultiBulkReply:
 				args = payload.Data.(*protocol.MultiBulkReply).Args
 			default:

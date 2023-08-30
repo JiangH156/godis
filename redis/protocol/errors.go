@@ -23,8 +23,8 @@ type ArgNumErrReply struct {
 	Cmd string
 }
 
-func MakeArgNumErrReply() *ArgNumErrReply {
-	return &ArgNumErrReply{}
+func MakeArgNumErrReply(cmd string) *ArgNumErrReply {
+	return &ArgNumErrReply{Cmd: cmd}
 }
 
 func (a *ArgNumErrReply) ToBytes() []byte {
