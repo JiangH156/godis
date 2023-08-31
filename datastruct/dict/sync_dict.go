@@ -7,10 +7,6 @@ type SyncDict struct {
 	m sync.Map
 }
 
-func NewSyncDict() *SyncDict {
-	return &SyncDict{}
-}
-
 func (dict *SyncDict) Get(key string) (val any, exists bool) {
 	return dict.m.Load(key)
 }
