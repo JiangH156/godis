@@ -32,6 +32,13 @@ func MakeDB() *DB {
 	return db
 }
 
+func (db *DB) GetEntity(key string) (entity *DataEntity, ok bool) {
+	entity, ok = db.Get(key)
+	if !ok {
+		return nil, false
+	}
+	return entity, true
+}
 func (db *DB) Exec(conn redis.Connection, cmdLine CmdLine) redis.Reply {
 	cmdName := string(cmdLine[0])
 	cmd, ok := cmdTable[cmdName]

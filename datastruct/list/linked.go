@@ -1,5 +1,7 @@
 package list
 
+import "github.com/jiangh156/godis/datastruct/utils"
+
 type LinkedList struct {
 	first *node
 	last  *node
@@ -131,7 +133,7 @@ func (list *LinkedList) RemoveLast() (val any) {
 	return n.data
 }
 
-func (list *LinkedList) RemoveAllByVal(expected expected) int {
+func (list *LinkedList) RemoveAllByVal(val any) int {
 	if list == nil {
 		panic("list is nil")
 	}
@@ -140,7 +142,7 @@ func (list *LinkedList) RemoveAllByVal(expected expected) int {
 	var nextNode *node
 	for n != nil {
 		nextNode = n.next
-		if expected(n) {
+		if utils.Equals(n.data, val) {
 			list.removeNode(n)
 			removed++
 		}
@@ -149,7 +151,7 @@ func (list *LinkedList) RemoveAllByVal(expected expected) int {
 	return removed
 }
 
-func (list *LinkedList) RemoveByVal(expected expected, count int) int {
+func (list *LinkedList) RemoveByVal(val any, count int) int {
 	if list == nil {
 		panic("list is nil")
 	}
@@ -158,7 +160,7 @@ func (list *LinkedList) RemoveByVal(expected expected, count int) int {
 	var nextNode *node
 	for n != nil && removed < count {
 		nextNode = n.next
-		if expected(n) {
+		if utils.Equals(n.data, val) {
 			list.removeNode(n)
 			removed++
 		}
@@ -167,7 +169,7 @@ func (list *LinkedList) RemoveByVal(expected expected, count int) int {
 	return removed
 }
 
-func (list *LinkedList) ReverseRemoveByVal(expected expected, count int) int {
+func (list *LinkedList) ReverseRemoveByVal(val any, count int) int {
 	if list == nil {
 		panic("list is nil")
 	}
@@ -176,7 +178,7 @@ func (list *LinkedList) ReverseRemoveByVal(expected expected, count int) int {
 	var prevNode *node
 	for n != nil && removed < count {
 		prevNode = n.prev
-		if expected(n) {
+		if utils.Equals(n.data, val) {
 			list.removeNode(n)
 			removed++
 		}
@@ -210,7 +212,7 @@ func (list *LinkedList) ForEach(consumer consumer) {
 	}
 }
 
-func (list *LinkedList) Contains(expected expected) int {
+func (list *LinkedList) Contains(val any) int {
 	if list == nil {
 		panic("list is nil")
 	}
@@ -219,7 +221,7 @@ func (list *LinkedList) Contains(expected expected) int {
 	var nextNode *node
 	for n != nil {
 		nextNode = n.next
-		if expected(n) {
+		if utils.Equals(n.data, val) {
 			result++
 		}
 		n = nextNode
