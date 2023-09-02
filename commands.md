@@ -15,3 +15,18 @@
   - setnx
   - getset
   - strlen
+- list
+  - Lpush
+  - Rpush
+  - Lpop
+  - Rpop
+  - Llen
+  - Lindex
+  - Lrange
+  - Lset
+  - Lrme
+- hash
+  - Hset
+  - Hget
+  - Hdel
+  - Hkeys
