@@ -3,6 +3,8 @@ package database
 import (
 	"github.com/jiangh156/godis/interface/redis"
 	"github.com/jiangh156/godis/redis/protocol"
+	"strconv"
+	"time"
 )
 
 func (db *DB) getAsString(key string) ([]byte, redis.ErrReply) {
@@ -89,10 +91,32 @@ func execStrlen(db *DB, args [][]byte) redis.Reply {
 	return protocol.MakeIntReply(int64(len(bytes)))
 }
 
+// SETEX <key> <seconds> <value>
+func execSetEX(db *DB, args [][]byte) redis.Reply {
+	if len(args) != 3 {
+		return protocol.MakeErrReply("ERR wrong number of arguments for 'SetEX' command")
+	}
+	key := string(args[0])
+	val := args[2]
+	ttlArg, err := strconv.ParseInt(string(args[1]), 10, 64)
+	ttlArg *= 10
+	if err != nil {
+		return protocol.MakeErrReply("ERR value is not an integer or out of range")
+	}
+	if ttlArg <= 0 {
+		return protocol.MakeErrReply("ERR invalid expire time")
+	}
+	db.Put(key, &DataEntity{Data: val})
+	expireTime := time.Now().Add(time.Duration(ttlArg) * time.Millisecond)
+	db.Expire(key, expireTime)
+	return protocol.MakeOkReply()
+}
+
 func init() {
 	RegisterCommand("Get", execGet, 2)
 	RegisterCommand("Set", execSet, 3)
 	RegisterCommand("SetNX", execSetNX, 3)
 	RegisterCommand("GetSet", execGetSet, 3)
 	RegisterCommand("Strlen", execStrlen, 2)
+	RegisterCommand("SetEX", execSetEX, 4)
 }

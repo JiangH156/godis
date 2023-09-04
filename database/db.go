@@ -4,6 +4,7 @@ import (
 	"github.com/jiangh156/godis/datastruct/dict"
 	"github.com/jiangh156/godis/interface/redis"
 	"github.com/jiangh156/godis/redis/protocol"
+	"time"
 )
 
 type ExecFunc func(db *DB, args [][]byte) redis.Reply
@@ -15,8 +16,49 @@ type DataEntity struct {
 type DB struct {
 	index int
 	Data  dict.Dict
+
+	TTLMap dict.Dict
 }
 
+func (db *DB) Expire(key string, expireTime time.Time) {
+	db.TTLMap.Put(key, expireTime)
+}
+func (db *DB) IsExpire(key string) bool {
+	rawExpireTime, ok := db.TTLMap.Get(key)
+	if !ok {
+		return false
+	}
+	expireTime := rawExpireTime.(time.Time)
+	expired := time.Now().After(expireTime)
+	if expired {
+		db.TTLMap.Remove(key)
+	}
+	return expired
+}
+func (db *DB) Persist(key string) {
+	db.TTLMap.Remove(key)
+}
+func (db *DB) CleanExpire() {
+	keys := db.TTLMap.Keys()
+	for _, key := range keys {
+		rawExpireTime, ok := db.TTLMap.Get(key)
+		// key is deleted when range
+		if !ok {
+			continue
+		}
+		_, exists := db.Get(key)
+		if !exists {
+			db.TTLMap.Remove(key)
+			continue
+		}
+		expireTime := rawExpireTime.(time.Time)
+		expired := time.Now().After(expireTime)
+		if expired {
+			db.TTLMap.Remove(key)
+			db.Data.Remove(key)
+		}
+	}
+}
 func (db *DB) Close() {
 	db.Data.Clear()
 }
@@ -99,4 +141,5 @@ func (db *DB) Removes(keys ...string) (result int) {
 }
 func (db *DB) Flush() {
 	db.Data.Clear()
+	db.TTLMap.Clear()
 }
