@@ -225,14 +225,49 @@ func execSDiff(db *DB, args [][]byte) redis.Reply {
 	return protocol.MakeMultiBulkReply(arr)
 }
 
-// SINTER key [key ...]
-func execSInter(db *DB, args [][]byte) redis.Reply {
-
-}
-
 // SUNION key [key ...]
 func execSUnion(db *DB, args [][]byte) redis.Reply {
+	if len(args) < 1 {
+		return protocol.MakeErrReply("ERR wrong number of arguments for 'SUnion' command")
+	}
+	keys := make([]string, len(args))
+	for i, arg := range args {
+		keys[i] = string(arg)
+	}
 
+	var result *Set.Set
+	for i, key := range keys {
+		set, errReply := db.getAsSet(key)
+		if errReply != nil {
+			return errReply
+		}
+		if set == nil {
+			if i == 0 {
+				// early termination
+				return protocol.MakeEmptyMultiBulkReply()
+			} else {
+				continue
+			}
+		}
+		if result == nil {
+			// init
+			result = Set.MakeFromVals(set.ToSlice()...)
+		} else {
+			result = result.Union(set)
+			if result.Len() == 0 {
+				// early termination
+				return protocol.MakeEmptyMultiBulkReply()
+			}
+		}
+	}
+	arr := make([][]byte, result.Len())
+	i := 0
+	result.ForEach(func(member string) bool {
+		arr[i] = []byte(member)
+		i++
+		return true
+	})
+	return protocol.MakeMultiBulkReply(arr)
 }
 
 func init() {
@@ -240,4 +275,8 @@ func init() {
 	RegisterCommand("SMembers", execSMembers, 2)
 	RegisterCommand("SIsMember", execSIsMember, 3)
 	RegisterCommand("SRandMember", execSIsMember, -2)
+	RegisterCommand("SCard", execSCard, 2)
+	RegisterCommand("SRandMember", execSRandMember, -2)
+	RegisterCommand("SDiff", execSDiff, -2)
+	RegisterCommand("SUnion", execSUnion, -2)
 }
