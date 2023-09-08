@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/jiangh156/godis/config"
+	"github.com/jiangh156/godis/interface/db"
 	"github.com/jiangh156/godis/interface/redis"
 	"github.com/jiangh156/godis/redis/protocol"
 	"strconv"
@@ -11,6 +12,10 @@ import (
 type Server struct {
 	DBSet []*DB
 }
+
+var RedisServerInstance *Server
+
+var _ db.DataBase = (*Server)(nil)
 
 // redis节点Datebase
 func NewSingleServer() *Server {
@@ -23,6 +28,7 @@ func NewSingleServer() *Server {
 		db.index = i
 		server.DBSet[i] = db
 	}
+	RedisServerInstance = server
 	return server
 }
 

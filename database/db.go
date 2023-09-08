@@ -1,15 +1,21 @@
 package database
 
 import (
+	"github.com/jiangh156/godis/config"
 	"github.com/jiangh156/godis/datastruct/dict"
 	"github.com/jiangh156/godis/interface/redis"
+	"github.com/jiangh156/godis/lib/logger"
 	"github.com/jiangh156/godis/redis/protocol"
+	"os"
 	"time"
+)
+
+var (
+	aofQueueSize = 1 << 4
 )
 
 type ExecFunc func(db *DB, args [][]byte) redis.Reply
 type CmdLine [][]byte
-
 type DataEntity struct {
 	Data any
 }
@@ -17,9 +23,29 @@ type DB struct {
 	index int
 	Data  dict.Dict
 
-	TTLMap dict.Dict
+	TTLMap      dict.Dict
+	aofChan     chan *protocol.MultiBulkReply
+	aofFile     *os.File
+	aofFilename string
 }
 
+func MakeDB() *DB {
+	db := &DB{
+		Data:   dict.MakeSyncDict(),
+		TTLMap: dict.MakeSyncDict(),
+	}
+	if config.Properties.AppendOnly {
+		aofFile, err := os.OpenFile(config.Properties.AppendFilename, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0600)
+		if err != nil {
+			logger.Warn(err.Error())
+		} else {
+			db.aofFile = aofFile
+			db.aofChan = make(chan *protocol.MultiBulkReply, aofQueueSize)
+		}
+		go db.handleAof()
+	}
+	return db
+}
 func (db *DB) Expire(key string, expireTime time.Time) {
 	db.TTLMap.Put(key, expireTime)
 }
@@ -59,19 +85,13 @@ func (db *DB) CleanExpire() {
 		}
 	}
 }
+
 func (db *DB) Close() {
 	db.Data.Clear()
 }
 
 func (db *DB) AfterClientClose(c redis.Connection) {
 	//TODO pub/sub 处理
-}
-
-func MakeDB() *DB {
-	db := &DB{
-		Data: dict.MakeSyncDict(),
-	}
-	return db
 }
 
 func (db *DB) GetEntity(key string) (entity *DataEntity, ok bool) {
