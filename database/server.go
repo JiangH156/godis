@@ -4,13 +4,15 @@ import (
 	"github.com/jiangh156/godis/config"
 	"github.com/jiangh156/godis/interface/db"
 	"github.com/jiangh156/godis/interface/redis"
+	"github.com/jiangh156/godis/lib/sync/atomic"
 	"github.com/jiangh156/godis/redis/protocol"
 	"strconv"
 	"strings"
 )
 
 type Server struct {
-	DBSet []*DB
+	DBSet      []*DB
+	aofLoading atomic.AtomicBool
 }
 
 var RedisServerInstance *Server
@@ -29,6 +31,11 @@ func NewSingleServer() *Server {
 		server.DBSet[i] = db
 	}
 	RedisServerInstance = server
+	//TODO AOF
+	if config.Properties.AppendOnly {
+		server.aofLoading.Set(true)
+		LoadAof()
+	}
 	return server
 }
 
@@ -51,6 +58,10 @@ func execSelect(conn redis.Connection, args [][]byte) redis.Reply {
 		return protocol.MakeErrReply("ERR invalid DB index: " + strconv.Itoa(int(dbNum)))
 	}
 	conn.SelectDB(int(dbNum))
+	if config.Properties.AppendOnly {
+		aofReply := RedisServerInstance.DBSet[0].makeAofCmd("select", args[1:])
+		RedisServerInstance.DBSet[0].addAof(aofReply)
+	}
 	return protocol.MakeOkReply()
 }
 

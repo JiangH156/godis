@@ -46,6 +46,8 @@ func execSAdd(db *DB, args [][]byte) redis.Reply {
 	for _, member := range members {
 		set.Add(string(member))
 	}
+	aofReply := db.makeAofCmd("sadd", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(len(members)))
 }
 
@@ -91,6 +93,8 @@ func execSRem(db *DB, args [][]byte) redis.Reply {
 			removed++
 		}
 	}
+	aofReply := db.makeAofCmd("srem", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(removed))
 }
 
@@ -273,6 +277,7 @@ func execSUnion(db *DB, args [][]byte) redis.Reply {
 func init() {
 	RegisterCommand("SAdd", execSAdd, -3)
 	RegisterCommand("SMembers", execSMembers, 2)
+	RegisterCommand("SRem", execSRem, -3)
 	RegisterCommand("SIsMember", execSIsMember, 3)
 	RegisterCommand("SRandMember", execSIsMember, -2)
 	RegisterCommand("SCard", execSCard, 2)

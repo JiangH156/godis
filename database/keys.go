@@ -19,6 +19,8 @@ func execDel(db *DB, args [][]byte) redis.Reply {
 	}
 	result := db.Removes(keys...)
 	db.CleanExpire()
+	aofReply := db.makeAofCmd("del", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(result))
 }
 
@@ -64,6 +66,8 @@ func execFlushDB(db *DB, args [][]byte) redis.Reply {
 		return protocol.MakeErrReply("ERR wrong number of arguments for 'flushDB' command")
 	}
 	db.Flush()
+	aofReply := db.makeAofCmd("flushdb", args)
+	db.addAof(aofReply)
 	return protocol.MakeOkReply()
 }
 func execType(db *DB, args [][]byte) redis.Reply {
@@ -103,6 +107,8 @@ func execRename(db *DB, args [][]byte) redis.Reply {
 	}
 	db.Remove(oldKye)
 	db.Put(newKey, entity)
+	aofReply := db.makeAofCmd("rename", args)
+	db.addAof(aofReply)
 	return protocol.MakeStatusReply("OK")
 }
 func execRenameNX(db *DB, args [][]byte) redis.Reply {
@@ -125,6 +131,8 @@ func execRenameNX(db *DB, args [][]byte) redis.Reply {
 		return protocol.MakeErrReply("ERR target key name already exists")
 	}
 	db.Put(newKey, entity)
+	aofReply := db.makeAofCmd("renamenx", args)
+	db.addAof(aofReply)
 	return protocol.MakeOkReply()
 }
 

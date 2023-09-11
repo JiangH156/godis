@@ -47,6 +47,8 @@ func execSet(db *DB, args [][]byte) redis.Reply {
 	if result == 0 {
 		return protocol.MakeErrReply("ERR fail to store data")
 	}
+	aofReply := db.makeAofCmd("set", args)
+	db.addAof(aofReply)
 	return protocol.MakeOkReply()
 }
 
@@ -59,6 +61,8 @@ func execSetNX(db *DB, args [][]byte) redis.Reply {
 	result := db.PutIfAbsent(key, &DataEntity{
 		Data: val,
 	})
+	aofReply := db.makeAofCmd("setnx", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(result))
 }
 
@@ -77,6 +81,8 @@ func execGetSet(db *DB, args [][]byte) redis.Reply {
 	db.Put(key, &DataEntity{
 		Data: val,
 	})
+	aofReply := db.makeAofCmd("getset", args)
+	db.addAof(aofReply)
 	return protocol.MakeBulkReply(oldVal)
 }
 func execStrlen(db *DB, args [][]byte) redis.Reply {

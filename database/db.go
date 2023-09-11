@@ -20,10 +20,10 @@ type DataEntity struct {
 	Data any
 }
 type DB struct {
-	index int
-	Data  dict.Dict
+	index  int
+	Data   dict.Dict
+	TTLMap dict.Dict
 
-	TTLMap      dict.Dict
 	aofChan     chan *protocol.MultiBulkReply
 	aofFile     *os.File
 	aofFilename string

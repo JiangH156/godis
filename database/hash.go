@@ -42,6 +42,8 @@ func execHSet(db *DB, args [][]byte) redis.Reply {
 		return err
 	}
 	result := hash.Put(field, value)
+	aofReply := db.makeAofCmd("hset", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(result))
 }
 
@@ -84,6 +86,8 @@ func execHDel(db *DB, args [][]byte) redis.Reply {
 			removed++
 		}
 	}
+	aofReply := db.makeAofCmd("hdel", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(removed))
 }
 

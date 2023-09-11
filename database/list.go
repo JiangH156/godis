@@ -47,6 +47,8 @@ func execLPush(db *DB, args [][]byte) redis.Reply {
 	for _, val := range values {
 		list.Insert(0, val)
 	}
+	aofReply := db.makeAofCmd("lpush", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(list.Len()))
 }
 
@@ -64,6 +66,8 @@ func execRPush(db *DB, args [][]byte) redis.Reply {
 	for _, val := range values {
 		list.Add(val)
 	}
+	aofReply := db.makeAofCmd("rpush", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(list.Len()))
 }
 
@@ -84,6 +88,8 @@ func execLPop(db *DB, args [][]byte) redis.Reply {
 	if list.Len() == 0 {
 		db.Remove(key)
 	}
+	aofReply := db.makeAofCmd("lpop", args)
+	db.addAof(aofReply)
 	return protocol.MakeBulkReply(val)
 }
 
@@ -104,6 +110,8 @@ func execRPop(db *DB, args [][]byte) redis.Reply {
 	if list.Len() == 0 {
 		db.Remove(key)
 	}
+	aofReply := db.makeAofCmd("rpop", args)
+	db.addAof(aofReply)
 	return protocol.MakeBulkReply(val)
 }
 
@@ -233,11 +241,13 @@ func execLSet(db *DB, args [][]byte) redis.Reply {
 		return protocol.MakeErrReply("ERR index out of range")
 	}
 	list.Set(index, value)
+	aofReply := db.makeAofCmd("lset", args)
+	db.addAof(aofReply)
 	return protocol.MakeOkReply()
 }
 
 // LREM key count value 从列表中删除指定数量的匹配元素。
-func execLRme(db *DB, args [][]byte) redis.Reply {
+func execLRem(db *DB, args [][]byte) redis.Reply {
 	if len(args) != 3 {
 		return protocol.MakeErrReply("ERR wrong number of arguments for 'LRem' command")
 	}
@@ -260,12 +270,9 @@ func execLRme(db *DB, args [][]byte) redis.Reply {
 		count = -count
 	}
 	removed = list.RemoveByVal(value, count)
+	aofReply := db.makeAofCmd("lrem", args)
+	db.addAof(aofReply)
 	return protocol.MakeIntReply(int64(removed))
-}
-
-// LTRIM key start stop 修剪列表，保留指定范围内的元素。
-func execLTrim(db *DB, args [][]byte) redis.Reply {
-	return nil
 }
 
 func init() {
@@ -277,5 +284,5 @@ func init() {
 	RegisterCommand("LIndex", execLIndex, 3)
 	RegisterCommand("LRange", execLRange, 4)
 	RegisterCommand("LSet", execLSet, 4)
-	RegisterCommand("LRme", execLRme, 4)
+	RegisterCommand("LRem", execLRem, 4)
 }
