@@ -176,18 +176,19 @@ func (skipList *skipList) getByRank(rank int64) *Node {
 	return n
 }
 func (skipList *skipList) hasInRange(min *ScoreBorder, max *ScoreBorder) bool {
-	if min.Value > max.Value || (min.Value == max.Value && min.Exclude != max.Exclude) {
+	if min.Value > max.Value || (min.Value == max.Value && !(min.Exclude || max.Exclude)) {
 		return false
 	}
-	if min.less(skipList.header.level[0].forward.Element.Score) {
+	if min.Value > skipList.tail.Element.Score {
 		return false
 	}
-	if max.greater(skipList.tail.Element.Score) {
+	if max.Value < skipList.header.level[0].forward.Element.Score {
 		return false
 	}
 	return true
 }
 
+// finish test
 func (skipList *skipList) getFirstInScoreRange(min *ScoreBorder, max *ScoreBorder) *Node {
 	if !skipList.hasInRange(min, max) {
 		return nil
@@ -199,10 +200,10 @@ func (skipList *skipList) getFirstInScoreRange(min *ScoreBorder, max *ScoreBorde
 		// 同一level下不断寻找节点
 		if n.level[i] != nil {
 			// 同一层次遍历
-			for n.level[i].forward != nil && (n.level[i].forward.Element.Score <= max.Value) { // same score, different member
+			for n.level[i].forward != nil && max.greater(n.level[i].forward.Element.Score) {
 				n = n.level[i].forward
 				// 找到元素位置
-				if n.Element.Score >= min.Value { // 大于最小值
+				if min.less(n.Element.Score) { // 大于最小值
 					return n
 				}
 			}
@@ -210,25 +211,26 @@ func (skipList *skipList) getFirstInScoreRange(min *ScoreBorder, max *ScoreBorde
 	}
 	return n
 }
+
 func (skipList *skipList) getLastInScoreRange(min *ScoreBorder, max *ScoreBorder) *Node {
 	if !skipList.hasInRange(min, max) {
 		return nil
 	}
 	// 当前遍历节点
-	var n = skipList.tail
+	var n = skipList.header
 	// 从上往下遍历
 	for i := skipList.level - 1; i >= 0; i-- { // 自顶向下遍历
 		// 同一level下不断寻找节点
 		if n.level[i] != nil {
 			// 同一层次遍历
-			for n.level[i].forward != nil && (n.level[i].forward.Element.Score <= max.Value) { // same score, different member
+			for n.level[i].forward != nil && max.greater(n.level[i].forward.Element.Score) {
 				n = n.level[i].forward
 			}
 		}
 	}
 	return n
 }
-func (skipList *skipList) RemoveRangeByScore(min *ScoreBorder, max *ScoreBorder) (removed []*Element) {
+func (skipList *skipList) removeRangeByScore(min *ScoreBorder, max *ScoreBorder) (removed []*Element) {
 	if !skipList.hasInRange(min, max) {
 		return nil
 	}
@@ -251,7 +253,7 @@ func (skipList *skipList) RemoveRangeByScore(min *ScoreBorder, max *ScoreBorder)
 	}
 	return reNodes
 }
-func (skipList *skipList) RemoveRangeByRank(start int64, stop int64) (removed []*Element) {
+func (skipList *skipList) removeRangeByRank(start int64, stop int64) (removed []*Element) {
 	reNodes := make([]*Element, maxLevel)
 	if start > skipList.length {
 		return nil
