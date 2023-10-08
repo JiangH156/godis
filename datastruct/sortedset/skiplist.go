@@ -155,28 +155,170 @@ func (skipList *skipList) getRank(member string, score float64) int64 {
 
 // 寻找排名为 rank 的节点， rank从1开始
 func (skipList *skipList) getByRank(rank int64) *Node {
-	return nil
+	var r int64 = 0
+	// 寻找先驱节点
+	// 当前遍历节点
+	var n = skipList.header
+	// 从上往下遍历
+	for i := skipList.level - 1; i >= 0; i-- { // 自顶向下遍历
+		// 同一level下不断寻找节点
+		if r == rank {
+			return n
+		}
+		if n.level[i] != nil {
+			// 同一层次遍历
+			for n.level[i].forward != nil { //同一层中存在后续节点
+				r += n.level[i].span
+				n = n.level[i].forward
+			}
+		}
+	}
+	return n
 }
 func (skipList *skipList) hasInRange(min *ScoreBorder, max *ScoreBorder) bool {
+	if min.Value > max.Value || (min.Value == max.Value && min.Exclude != max.Exclude) {
+		return false
+	}
+	if min.less(skipList.header.level[0].forward.Element.Score) {
+		return false
+	}
+	if max.greater(skipList.tail.Element.Score) {
+		return false
+	}
 	return true
 }
 
 func (skipList *skipList) getFirstInScoreRange(min *ScoreBorder, max *ScoreBorder) *Node {
-	return nil
+	if !skipList.hasInRange(min, max) {
+		return nil
+	}
+	// 当前遍历节点
+	var n = skipList.header
+	// 从上往下遍历
+	for i := skipList.level - 1; i >= 0; i-- { // 自顶向下遍历
+		// 同一level下不断寻找节点
+		if n.level[i] != nil {
+			// 同一层次遍历
+			for n.level[i].forward != nil && (n.level[i].forward.Element.Score <= max.Value) { // same score, different member
+				n = n.level[i].forward
+				// 找到元素位置
+				if n.Element.Score >= min.Value { // 大于最小值
+					return n
+				}
+			}
+		}
+	}
+	return n
 }
 func (skipList *skipList) getLastInScoreRange(min *ScoreBorder, max *ScoreBorder) *Node {
-	return nil
+	if !skipList.hasInRange(min, max) {
+		return nil
+	}
+	// 当前遍历节点
+	var n = skipList.tail
+	// 从上往下遍历
+	for i := skipList.level - 1; i >= 0; i-- { // 自顶向下遍历
+		// 同一level下不断寻找节点
+		if n.level[i] != nil {
+			// 同一层次遍历
+			for n.level[i].forward != nil && (n.level[i].forward.Element.Score <= max.Value) { // same score, different member
+				n = n.level[i].forward
+			}
+		}
+	}
+	return n
 }
 func (skipList *skipList) RemoveRangeByScore(min *ScoreBorder, max *ScoreBorder) (removed []*Element) {
-	return nil
+	if !skipList.hasInRange(min, max) {
+		return nil
+	}
+	reNodes := make([]*Element, maxLevel)
+
+	var n = skipList.header
+
+	for i := skipList.length - 1; i >= 0; i-- {
+		if max.greater(n.Element.Score) {
+			break
+		}
+		for n.level[i].forward != nil {
+			member := n.level[i].forward.Element.Member
+			score := n.level[i].forward.Element.Score
+			if min.greater(score) && max.less(score) {
+				skipList.remove(member, score)
+			}
+			n = n.level[i].forward
+		}
+	}
+	return reNodes
 }
 func (skipList *skipList) RemoveRangeByRank(start int64, stop int64) (removed []*Element) {
-	return nil
+	reNodes := make([]*Element, maxLevel)
+	if start > skipList.length {
+		return nil
+	}
+	if start < 0 {
+		start = 0
+	}
+	if stop > skipList.length {
+		stop = skipList.length
+	}
+	var n = skipList.header
+	var rank int64 = 0
+	for i := skipList.length - 1; i >= 0; i-- {
+		if n.level[i] != nil {
+			for n.level[i].forward != nil && rank+n.level[i].span < start {
+				rank += n.level[i].span
+				n = n.level[i].forward
+			}
+		}
+	}
+	i := int64(0)
+	l := stop - start - 1
+	for i < l {
+		if n.level[0].forward != nil {
+			n = n.level[0].forward
+			reNodes[i] = &Element{Member: n.Element.Member, Score: n.Element.Score}
+			skipList.remove(n.Element.Member, n.Element.Score)
+			i++
+		}
+	}
+	return reNodes
 }
 
 func (skipList *skipList) removeNode(node *Node, update []*Node) {
-
+	var level = len(update)
+	// 更新span
+	for i := level - 1; i >= 0; i-- {
+		if update[i].level[i].forward == node {
+			update[i].level[i].span += node.level[i].span - 1
+			update[i].level[i].forward = node.level[i].forward
+		} else {
+			update[i].level[i].span--
+		}
+	}
+	node.level[0].forward.backward = update[0]
 }
 func (skipList *skipList) remove(member string, score float64) bool {
+	update := make([]*Node, maxLevel)
+	// 寻找先驱节点
+	// 当前遍历节点
+	var n = skipList.header
+	// 从上往下遍历
+	for i := skipList.level - 1; i >= 0; i-- { // 自顶向下遍历
+
+		// 同一level下不断寻找节点
+		if n.level[i] != nil {
+			// 遍历搜索
+			for n.level[i].forward != nil && (n.level[i].forward.Element.Score < score ||
+				(n.level[i].forward.Element.Score == score && n.level[i].forward.Element.Member < member)) { // same score, different member
+				n = n.level[i].forward
+			}
+		}
+		update[i] = n
+	}
+	if n.level[0].forward.Element.Member != member || n.level[0].forward.Element.Score != score {
+		return false
+	}
+	skipList.removeNode(n, update)
 	return true
 }
