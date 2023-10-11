@@ -232,6 +232,8 @@ func (skipList *skipList) getLastInScoreRange(min *ScoreBorder, max *ScoreBorder
 	}
 	return n
 }
+
+// finish test
 func (skipList *skipList) removeRangeByScore(min *ScoreBorder, max *ScoreBorder) (removed []*Element) {
 	if !skipList.hasInRange(min, max) {
 		return nil
@@ -239,7 +241,7 @@ func (skipList *skipList) removeRangeByScore(min *ScoreBorder, max *ScoreBorder)
 	reNodes := []*Element{}
 
 	var n = skipList.header
-	for i := skipList.length - 1; i >= 0; i-- {
+	for i := skipList.level - 1; i >= 0; i-- {
 		if n.level[i] != nil {
 			for n.level[i].forward != nil && min.Value > n.level[i].forward.Element.Score {
 				n = n.level[i].forward
@@ -265,18 +267,18 @@ func (skipList *skipList) removeRangeByScore(min *ScoreBorder, max *ScoreBorder)
 }
 func (skipList *skipList) removeRangeByRank(start int64, stop int64) (removed []*Element) {
 	reNodes := []*Element{}
-	if start > skipList.length {
+	if start > skipList.length-1 {
 		return nil
 	}
 	if start < 0 {
 		start = 0
 	}
-	if stop > skipList.length {
-		stop = skipList.length
+	if stop > skipList.length-1 {
+		stop = skipList.length - 1
 	}
 	var n = skipList.header
-	var rank int64 = 0
-	for i := skipList.length - 1; i >= 0; i-- {
+	var rank int64 = -1
+	for i := skipList.level - 1; i >= 0; i-- {
 		if n.level[i] != nil {
 			for n.level[i].forward != nil && rank+n.level[i].span < start {
 				rank += n.level[i].span
@@ -284,14 +286,21 @@ func (skipList *skipList) removeRangeByRank(start int64, stop int64) (removed []
 			}
 		}
 	}
+	// n定位到第一个删除点
+	if n.level[0].forward != nil {
+		n = n.level[0].forward
+	}
+
 	i := int64(0)
-	l := stop - start - 1
+	l := stop - start + 1
 	for i < l {
+		member := n.Element.Member
+		score := n.Element.Score
+		reNodes = append(reNodes, &Element{Member: member, Score: score})
+		skipList.remove(member, score)
+		i++
 		if n.level[0].forward != nil {
 			n = n.level[0].forward
-			reNodes = append(reNodes, &Element{Member: n.Element.Member, Score: n.Element.Score})
-			skipList.remove(n.Element.Member, n.Element.Score)
-			i++
 		}
 	}
 	return reNodes
