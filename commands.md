@@ -30,3 +30,17 @@
   - Hget
   - Hdel
   - Hkeys
+- sortedset
+  - ZAdd 
+  - ZScore 
+  - ZRank 
+  - ZRevRank 
+  - ZCard 
+  - ZRange 
+  - ZRevRange 
+  - ZCount 
+  - ZRangeByScore
+  - ZRevRangeByScore 
+  - ZRemRangeByScore 
+  - ZRemRangeByRank
+  - ZRem
