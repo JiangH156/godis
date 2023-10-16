@@ -1,8 +1,9 @@
 bind: 127.0.0.1
-port: 8000
+port: 6380
 appendOnly: true
 appendFilename: appendonly.aof
 maxClients:
 databases: 16
-peers:
-self:
+
+self: 127.0.0.1:6380
+peers: 127.0.0.1:6378

@@ -10,21 +10,21 @@ import (
 	"strings"
 )
 
-type Server struct {
+type SingleServer struct {
 	DBSet      []*DB
 	aofLoading atomic.AtomicBool
 }
 
-var RedisServerInstance *Server
+var RedisServerInstance *SingleServer
 
-var _ db.DataBase = (*Server)(nil)
+var _ db.DataBase = (*SingleServer)(nil)
 
 // redis节点Datebase
-func NewSingleServer() *Server {
+func NewSingleServer() *SingleServer {
 	if config.Properties.Databases == 0 {
 		config.Properties.Databases = 16
 	}
-	server := &Server{DBSet: make([]*DB, 16)}
+	server := &SingleServer{DBSet: make([]*DB, 16)}
 	for i := range server.DBSet {
 		db := MakeDB()
 		db.index = i
@@ -39,7 +39,7 @@ func NewSingleServer() *Server {
 	return server
 }
 
-func (s *Server) Exec(conn redis.Connection, args [][]byte) redis.Reply {
+func (s *SingleServer) Exec(conn redis.Connection, args [][]byte) redis.Reply {
 	// 处理select命令
 	cmdName := args[0]
 	if strings.ToLower(string(cmdName)) == "select" {
@@ -65,12 +65,12 @@ func execSelect(conn redis.Connection, args [][]byte) redis.Reply {
 	return protocol.MakeOkReply()
 }
 
-func (s *Server) Close() {
+func (s *SingleServer) Close() {
 	for _, db := range s.DBSet {
 		db.Close()
 	}
 }
 
-func (s *Server) AfterClientClose(conn redis.Connection) {
+func (s *SingleServer) AfterClientClose(conn redis.Connection) {
 	//TODO implement me
 }

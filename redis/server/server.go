@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"errors"
+	"github.com/jiangh156/godis/cluster"
+	"github.com/jiangh156/godis/config"
 	"github.com/jiangh156/godis/database"
 	"github.com/jiangh156/godis/interface/db"
 	"github.com/jiangh156/godis/lib/logger"
@@ -116,7 +118,14 @@ func (handler *RedisHandler) Close() error {
 }
 
 func MakeRedisHandler() *RedisHandler {
+	var DB db.DataBase
+	if config.Properties.Self != "" && len(config.Properties.Peers) > 0 {
+		DB = cluster.MakeClusterServer()
+	} else {
+		DB = database.NewSingleServer()
+	}
+	// 单节点
 	return &RedisHandler{
-		DB: database.NewSingleServer(),
+		DB: DB,
 	}
 }

@@ -24,7 +24,7 @@ func main() {
 		Ext:        ".log",
 		TimeFormat: "2006-01-01",
 	})
-	config.SetupConfig("cmd/redis.yml")
+	config.SetupConfig("redis.yml")
 	//handler := server.MakeRedisHandler()
 	handler := server.MakeRedisHandler()
 	err := tcp.ListenAndServeWithSignal(&tcp.Config{
